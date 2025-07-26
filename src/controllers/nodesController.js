@@ -1,6 +1,7 @@
 const db = require('../services/db');
-const logger = require('../services/logger');
+const { logger } = require('../services/logger');
 const RecordingEngine = require('../services/RecordingEngine');
+const AppError = require('../utils/errorFormatter');
 
 /**
  * @description Add a new security node to the system.
@@ -17,6 +18,9 @@ exports.addNode = async (req, res, next) => {
     logger.info(`New security node added: ${result.rows[0].designation}`);
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    if (error.code === '23505') {
+      return next(new AppError('A node with that designation already exists.', 409));
+    }
     next(error);
   }
 };
@@ -65,7 +69,7 @@ exports.getNodeById = async (req, res, next) => {
     const { id } = req.params;
     const result = await db.query('SELECT * FROM security_nodes WHERE node_id = $1', [id]);
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Node not found' });
+      return next(new AppError('Node not found', 404));
     }
     res.status(200).json(result.rows[0]);
   } catch (error) {
@@ -87,7 +91,7 @@ exports.updateNode = async (req, res, next) => {
       [designation, ip_address, port, stream_path, node_type, status, id]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Node not found' });
+      return next(new AppError('Node not found', 404));
     }
     logger.info(`Node ${id} updated: ${result.rows[0].designation}`);
     res.status(200).json(result.rows[0]);
@@ -106,7 +110,7 @@ exports.deleteNode = async (req, res, next) => {
     const { id } = req.params;
     const result = await db.query('DELETE FROM security_nodes WHERE node_id = $1 RETURNING *', [id]);
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: 'Node not found' });
+      return next(new AppError('Node not found', 404));
     }
     logger.info(`Node ${id} deleted: ${result.rows[0].designation}`);
     res.status(204).send();

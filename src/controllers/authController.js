@@ -10,6 +10,8 @@ const db = require('../services/db');
  * @route POST /api/auth/register
  * @access Public
  */
+const AppError = require('../utils/errorFormatter');
+
 exports.register = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
@@ -20,6 +22,9 @@ exports.register = async (req, res, next) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (error) {
+    if (error.code === '23505') {
+      return next(new AppError('A user with that email or username already exists.', 409));
+    }
     next(error);
   }
 };
@@ -41,7 +46,7 @@ exports.setupMfa = async (req, res, next) => {
 
     qrcode.toDataURL(secret.otpauth_url, (err, data_url) => {
       if (err) {
-        return next(new Error('Failed to generate QR code.'));
+        return next(new AppError('Failed to generate QR code.', 500));
       }
       res.json({
         secret: secret.base32,
@@ -65,7 +70,7 @@ exports.verifyMfa = async (req, res, next) => {
 
     const { rows } = await db.query('SELECT secret FROM user_mfa_secrets WHERE user_id = $1', [userId]);
     if (rows.length === 0) {
-      return res.status(400).json({ message: 'MFA not set up for this user.' });
+      return next(new AppError('MFA not set up for this user.', 400));
     }
     const { secret } = rows[0];
 
@@ -79,7 +84,7 @@ exports.verifyMfa = async (req, res, next) => {
       await db.query('UPDATE user_mfa_secrets SET is_verified = true WHERE user_id = $1', [userId]);
       res.json({ message: 'MFA enabled successfully.' });
     } else {
-      res.status(400).json({ message: 'Invalid token, verification failed.' });
+      return next(new AppError('Invalid token, verification failed.', 400));
     }
   } catch (error) {
     next(error);
@@ -96,19 +101,19 @@ exports.login = async (req, res, next) => {
     const { email, password, mfaToken } = req.body;
     const { rows } = await db.query('SELECT * FROM system_users WHERE email = $1', [email]);
     if (rows.length === 0) {
-      return res.status(401).json({ message: 'Invalid credentials.' });
+      return next(new AppError('Invalid credentials.', 401));
     }
     const user = rows[0];
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid credentials.' });
+      return next(new AppError('Invalid credentials.', 401));
     }
 
     const mfaResult = await db.query('SELECT * FROM user_mfa_secrets WHERE user_id = $1 AND is_verified = true', [user.user_id]);
     if (mfaResult.rows.length > 0) {
       if (!mfaToken) {
-        return res.status(401).json({ mfaRequired: true, message: 'MFA token is required.' });
+        return next(new AppError('MFA token is required.', 401));
       }
       const { secret } = mfaResult.rows[0];
       const isTokenValid = speakeasy.totp.verify({
@@ -119,7 +124,7 @@ exports.login = async (req, res, next) => {
       });
 
       if (!isTokenValid) {
-        return res.status(401).json({ message: 'Invalid MFA token.' });
+        return next(new AppError('Invalid MFA token.', 401));
       }
     }
 

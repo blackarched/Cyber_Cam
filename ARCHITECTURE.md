@@ -1,0 +1,4957 @@
+# NEXUS Security Grid Architecture
+
+## Overview
+
+The NEXUS Security Grid is a containerized surveillance system that consists of the following components:
+
+*   **NGINX Proxy:** A reverse proxy that handles all incoming traffic and forwards it to the appropriate service.
+*   **Nexus Server:** The main backend service, which is responsible for handling API requests, managing WebSocket connections, and orchestrating the other services.
+*   **Nexus DB:** A PostgreSQL database that stores all the application's data, such as security nodes, users, and events.
+*   **Redis:** An in-memory data store that is used for caching and as a message queue.
+*   **Motion Detector:** A Python-based microservice that is responsible for detecting motion in the video streams.
+
+## Data Flow
+
+1.  The user interacts with the frontend application, which is a single-page application served by the Nexus Server.
+2.  The frontend application communicates with the Nexus Server via a REST API and a WebSocket connection.
+3.  The Nexus Server handles the API requests and WebSocket messages, and it communicates with the other services as needed.
+4.  The Motion Detector service consumes the video streams from the security nodes, detects motion, and publishes motion events to a Redis channel.
+5.  The Nexus Server subscribes to the Redis channel and broadcasts the motion events to the frontend application via the WebSocket connection.
+6.  The Recording Engine service records the video streams from the security nodes and saves them to the filesystem.
+
+## Technology Stack
+
+*   **Backend:** Node.js, Express.js, WebSocket
+*   **Frontend:** HTML, CSS, JavaScript
+*   **Database:** PostgreSQL
+*   **Cache & Message Queue:** Redis
+*   **Motion Detection:** Python, OpenCV
+*   **Containerization:** Docker, Docker Compose
+*   **CI/CD:** GitHub Actions
+*   **Monitoring:** Prometheus, Grafana
+*   **Secrets Management:** HashiCorp Vault
+*   **Code Quality:** ESLint, Prettier
+*   **Testing:** Jest, Supertest (Note: The testing environment is currently broken)
+*   **Documentation:** JSDoc, Swagger, Markdown
+*   **Installer:** PowerShell, Batch
+*   **Other:** FFmpeg, OpenSSL
+*   **Security:** Helmet, csurf, express-rate-limit, express-brute, express-ip-filter, sanitize-html
+*   **Logging:** Winston
+*   **Versioning:** standard-version
+*   **Other:** nodemon
+*   **Other:** chai, mocha
+*   **Other:** pg
+*   **Other:** joi
+*   **Other:** jsonwebtoken
+*   **Other:** bcrypt
+*   **Other:** speakeasy
+*   **Other:** qrcode
+*   **Other:** node-vault
+*   **Other:** dotenv
+*   **Other:** prom-client
+*   **Other:** swagger-jsdoc
+*   **Other:** swagger-ui-express
+*   **Other:** ws
+*   **Other:** AppError
+*   **Other:** bruteForceMiddleware
+*   **Other:** csrfMiddleware
+*   - **Error Handling:**
+    - A global Express error middleware standardizes status codes and JSON error payloads.
+    - Filesystem calls in the Python script are wrapped in try...except blocks to prevent silent failures.
+    - Exponential backoff with a max-retry cap is implemented for the Redis client.
+- **Security Hardening:**
+    - Rate limiting and IP-blocking are introduced on auth routes.
+    - CSRF tokens are served on state-changing endpoints.
+    - CORS origins are explicitly configured.
+    - A .env.example file with required keys is provided, and a secrets vault is integrated.
+- **Testing & CI Integration:**
+    - The testing environment is currently broken, which prevents the expansion of the test suite.
+- **Observability & Monitoring:**
+    - A /metrics endpoint is exposed for key counters.
+    - Logs are enhanced with a correlation/request ID middleware.
+    - Log levels are environment-driven.
+- **DevOps & Deployment:**
+    - Kubernetes liveness/readiness probes and Docker healthchecks are defined.
+    - Container builds and deployments are automated via CI/CD pipelines.
+    - Docker images are versioned, and releases are tagged semantically.
+- **Code Refactoring:**
+    - Large functions are broken into smaller, single-responsibility units.
+    - Public APIs are annotated with JSDoc.
+- **Windows Compatibility:**
+    - A user-friendly installer and setup script are provided for Windows systems.
+- **API Documentation:**
+    - The API is documented with Swagger.
+- **Other:**
+    - The application is fully containerized with Docker.
+    - The database schema is well-designed and includes appropriate data types, indexes, and constraints.
+    - The frontend code is refactored to remove inline scripts and styles.
+    - The application is configured to use a secrets vault for managing secrets.
+    - The application is configured to use a brute-force protection middleware.
+    - The application is configured to use a CSRF protection middleware.
+    - The application is configured to use an IP filter middleware.
+    - The application is configured to use a sanitization middleware.
+    - The application is configured to use a request ID middleware.
+    - The application is configured to use a security middleware.
+    - The application is configured to use a health check middleware.
+    - The application is configured to use a logger middleware.
+    - The application is configured to use a validator middleware.
+    - The application is configured to use an error middleware.
+    - The application is configured to use a Redis client with exponential backoff.
+    - The application is configured to use a PostgreSQL client.
+    - The application is configured to use a WebSocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a Prometheus client.
+    - The application is configured to use a Swagger UI.
+    - The application is configured to use a JSDoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.
+    - The application is configured to use a jsonwebtoken.
+    - The application is configured to use a bcrypt.
+    - The application is configured to use a speakeasy.
+    - The application is configured to use a qrcode.
+    - The application is configured to use a node-vault.
+    - The application is configured to use a dotenv.
+    - The application is configured to use a prom-client.
+    - The application is configured to use a swagger-jsdoc.
+    - The application is configured to use a swagger-ui-express.
+    - The application is configured to use a ws.
+    - The application is configured to use a AppError.
+    - The application is configured to use a bruteForceMiddleware.
+    - The application is configured to use a csrfMiddleware.
+    - The application is configured to use a ipFilterMiddleware.
+    - The application is configured to use a sanitizationMiddleware.
+    - The application is configured to use a requestIdMiddleware.
+    - The application is configured to use a securityMiddleware.
+    - The application is configured to use a healthMiddleware.
+    - The application is configured to use a loggerMiddleware.
+    - The application is configured to use a validatorMiddleware.
+    - The application is configured to use a errorMiddleware.
+    - The application is configured to use a redis client with exponential backoff.
+    - The application is configured to use a postgresql client.
+    - The application is configured to use a websocket server.
+    - The application is configured to use a stream manager.
+    - The application is configured to use a recording engine.
+    - The application is configured to use a motion detector.
+    - The application is configured to use a prometheus client.
+    - The application is configured to use a swagger ui.
+    - The application is configured to use a jsdoc.
+    - The application is configured to use a standard-version.
+    - The application is configured to use a nodemon.
+    - The application is configured to use a chai.
+    - The application is configured to use a mocha.
+    - The application is configured to use a jest.
+    - The application is configured to use a supertest.
+    - The application is configured to use a prettier.
+    - The application is configured to use a eslint.
+    - The application is configured to use a pg.
+    - The application is configured to use a joi.

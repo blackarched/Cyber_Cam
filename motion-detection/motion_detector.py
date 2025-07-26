@@ -4,6 +4,9 @@ import redis
 import time
 import os
 import json
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class MotionDetector:
     def __init__(self):
@@ -12,7 +15,7 @@ class MotionDetector:
         self.motion_threshold = 1000  # Threshold for the number of white pixels to trigger a motion event
 
     def start(self):
-        print("Motion detection microservice started.")
+        logging.info("Motion detection microservice started.")
         # This is a placeholder for where the service would subscribe to a command channel
         # to be told which streams to monitor. For now, we'll simulate a single stream.
         self.process_stream('rtsp://dummy-stream-url/video')
@@ -21,13 +24,13 @@ class MotionDetector:
         try:
             cap = cv2.VideoCapture(stream_url)
             if not cap.isOpened():
-                print(f"Error: Could not open video stream at {stream_url}")
+                logging.error(f"Could not open video stream at {stream_url}")
                 return
 
             while True:
                 ret, frame = cap.read()
                 if not ret:
-                    print("Stream ended. Reconnecting...")
+                    logging.warning("Stream ended. Reconnecting...")
                     time.sleep(5)
                     cap.release()
                     cap = cv2.VideoCapture(stream_url)
@@ -45,8 +48,12 @@ class MotionDetector:
 
                 # A short delay to prevent overwhelming the CPU
                 time.sleep(0.1)
+        except cv2.error as e:
+            logging.error(f"OpenCV error while processing the stream: {e}")
+        except redis.exceptions.RedisError as e:
+            logging.error(f"Redis error while publishing motion event: {e}")
         except Exception as e:
-            print(f"An error occurred while processing the stream: {e}")
+            logging.error(f"An unexpected error occurred while processing the stream: {e}", exc_info=True)
 
     def trigger_motion_event(self, stream_url, intensity):
         event_data = {
@@ -56,7 +63,7 @@ class MotionDetector:
             'timestamp': time.time(),
         }
         self.redis_client.publish('motion_events', json.dumps(event_data))
-        print(f"Motion detected on {stream_url} with intensity {intensity}")
+        logging.info(f"Motion detected on {stream_url} with intensity {intensity}")
 
 if __name__ == '__main__':
     detector = MotionDetector()
