@@ -40,6 +40,12 @@ An advanced, containerized surveillance system with real-time threat assessment,
 -   **Linting & Formatting:** `npm run lint` and `npm run format`
 -   **Automated Tests:** `npm test`
 
+## Windows Installation
+
+1.  Download the `install.bat` file from the root of the repository.
+2.  Right-click on the `install.bat` file and select "Run as administrator".
+3.  Follow the on-screen instructions.
+
 ## Accessing the System
 
 -   **Dashboard:** `https://localhost` (NGINX proxying to the server)
