@@ -19,8 +19,13 @@ exports.addNode = async (req, res, next) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') {
+      logger.warn(`Attempt to add node with existing designation: ${req.body.designation}`);
       return next(new AppError('A node with that designation already exists.', 409));
     }
+    logger.error(`Error adding new node: ${error.message}`, {
+      stack: error.stack,
+      nodeData: req.body,
+    });
     next(error);
   }
 };
@@ -29,8 +34,13 @@ exports.startRecording = async (req, res, next) => {
   try {
     const { id } = req.params;
     await RecordingEngine.startRecording(id);
+    logger.info(`Recording started for node ${id}.`);
     res.status(200).json({ message: `Recording started for node ${id}` });
   } catch (error) {
+    logger.error(`Error starting recording for node ${req.params.id}: ${error.message}`, {
+      stack: error.stack,
+      nodeId: req.params.id,
+    });
     next(error);
   }
 };
@@ -39,8 +49,13 @@ exports.stopRecording = async (req, res, next) => {
   try {
     const { id } = req.params;
     RecordingEngine.stopRecording(id);
+    logger.info(`Recording stopped for node ${id}.`);
     res.status(200).json({ message: `Recording stopped for node ${id}` });
   } catch (error) {
+    logger.error(`Error stopping recording for node ${req.params.id}: ${error.message}`, {
+      stack: error.stack,
+      nodeId: req.params.id,
+    });
     next(error);
   }
 };
@@ -55,6 +70,9 @@ exports.getAllNodes = async (req, res, next) => {
     const result = await db.query('SELECT * FROM security_nodes ORDER BY designation');
     res.status(200).json(result.rows);
   } catch (error) {
+    logger.error(`Error getting all nodes: ${error.message}`, {
+      stack: error.stack,
+    });
     next(error);
   }
 };
@@ -69,10 +87,15 @@ exports.getNodeById = async (req, res, next) => {
     const { id } = req.params;
     const result = await db.query('SELECT * FROM security_nodes WHERE node_id = $1', [id]);
     if (result.rows.length === 0) {
+      logger.warn(`Node with ID ${id} not found.`);
       return next(new AppError('Node not found', 404));
     }
     res.status(200).json(result.rows[0]);
   } catch (error) {
+    logger.error(`Error getting node by ID ${req.params.id}: ${error.message}`, {
+      stack: error.stack,
+      nodeId: req.params.id,
+    });
     next(error);
   }
 };
@@ -91,11 +114,17 @@ exports.updateNode = async (req, res, next) => {
       [designation, ip_address, port, stream_path, node_type, status, id]
     );
     if (result.rows.length === 0) {
+      logger.warn(`Attempted to update non-existent node with ID ${id}.`);
       return next(new AppError('Node not found', 404));
     }
     logger.info(`Node ${id} updated: ${result.rows[0].designation}`);
     res.status(200).json(result.rows[0]);
   } catch (error) {
+    logger.error(`Error updating node ${req.params.id}: ${error.message}`, {
+      stack: error.stack,
+      nodeId: req.params.id,
+      updateData: req.body,
+    });
     next(error);
   }
 };
@@ -110,11 +139,16 @@ exports.deleteNode = async (req, res, next) => {
     const { id } = req.params;
     const result = await db.query('DELETE FROM security_nodes WHERE node_id = $1 RETURNING *', [id]);
     if (result.rows.length === 0) {
+      logger.warn(`Attempted to delete non-existent node with ID ${id}.`);
       return next(new AppError('Node not found', 404));
     }
     logger.info(`Node ${id} deleted: ${result.rows[0].designation}`);
     res.status(204).send();
   } catch (error) {
+    logger.error(`Error deleting node ${req.params.id}: ${error.message}`, {
+      stack: error.stack,
+      nodeId: req.params.id,
+    });
     next(error);
   }
 };

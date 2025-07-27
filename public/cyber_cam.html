@@ -3,54 +3,314 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS SECURITY GRID - Advanced Cyber HUD</title>
-    <link rel="stylesheet" href="style.css">
+    <title>NEON TRADER 2077</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="neon.css">
 </head>
-<body>
-    <div class="hud-container">
-        <header class="cyber-header">
-            <div class="hud-title">NEXUS SECURITY GRID</div>
-            <div class="system-vitals">
-                <div class="vital-display">
-                    <div class="vital-label">NODES</div>
-                    <div class="vital-value" id="active-nodes">0</div>
-                </div>
-                <div class="vital-display">
-                    <div class="vital-label">UPTIME</div>
-                    <div class="vital-value" id="system-uptime">00:00:00</div>
-                </div>
-                <div class="vital-display">
-                    <div class="vital-label">STATUS</div>
-                    <div class="vital-value" id="system-state">ONLINE</div>
-                </div>
+<body class="min-h-screen grid-bg">
+    <div class="scanline"></div>
+    <div class="matrix-rain" id="matrixRain"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Cyber Noise Overlay -->
+    <div class="fixed inset-0 pointer-events-none opacity-5" id="noiseOverlay" style="background-image: url('data:image/svg+xml;utf8,<svg viewBox=\"0 0 200 200\" xmlns=\"http://www.w3.org/2000/svg\"><filter id=\"noise\"><feTurbulence type=\"fractalNoise\" baseFrequency=\"0.65\" numOctaves=\"3\" stitchTiles=\"stitch\"/></filter><rect width=\"100%\" height=\"100%\" filter=\"url(%23noise)\"/></svg>');"></div>
+
+    <!-- Header with glitch effect -->
+    <header class="bg-black bg-opacity-80 border-b border-neon-blue py-4 px-6 flex justify-between items-center neon-border-blue relative">
+        <div class="flex items-center space-x-4">
+            <div class="w-12 h-12 bg-neon-pink rounded-full glow-pink flex items-center justify-center">
+                <i class="fas fa-chart-line text-xl text-white"></i>
             </div>
-        </header>
-
-        <aside class="device-panel">
-            <div class="panel-header">Device Matrix</div>
-            <div class="device-grid" id="device-grid"></div>
-            <button class="cyber-button" id="deploy-node-button">+ Deploy New Node</button>
-        </aside>
-
-        <main class="camera-matrix" id="camera-matrix"></main>
-
-        <aside class="control-interface">
-            <div class="control-cluster">
-                <div class="cluster-title">Recording Ops</div>
-                <button class="cyber-button" id="record-control">Start Recording</button>
-                <button class="cyber-button" id="motion-control">Motion Track</button>
-            </div>
-            </aside>
-
-        <section class="system-logs">
-            <div class="panel-header">System Logs</div>
-            <div class="log-terminal" id="log-terminal"></div>
-        </section>
-    </div>
-
-    <div id="device-modal" class="modal-overlay">
+            <h1 class="text-3xl font-bold neon-text-pink flicker cyber-glitch" data-text="NEON TRADER 2077">NEON TRADER 2077</h1>
         </div>
 
+        <div class="flex items-center space-x-6">
+            <div class="text-center">
+                <p class="text-xs text-gray-400">CRYPTO TIME</p>
+                <p id="current-time" class="text-xl neon-text-blue font-orbitron">23:59:45</p>
+            </div>
+            <div class="text-center">
+                <p class="text-xs text-gray-400">NET WORTH</p>
+                <p class="text-xl neon-text-pink font-orbitron">₡ <span id="net-worth">1,245,890</span></p>
+            </div>
+            <div class="cyber-dropdown">
+                <div class="w-10 h-10 rounded-full bg-neon-blue bg-opacity-30 flex items-center justify-center neon-border-blue cursor-pointer hover:bg-opacity-50 transition cyber-tooltip" data-tooltip="User Profile">
+                    <i class="fas fa-user neon-text-blue"></i>
+                </div>
+                <div class="cyber-dropdown-content">
+                    <div class="p-3 border-b border-gray-800">
+                        <p class="text-sm neon-text-blue">Logged in as: <span class="text-white">Corp_Trader_42</span></p>
+                    </div>
+                    <div class="p-2">
+                        <a href="#" class="block px-3 py-2 text-sm hover:bg-gray-800">Dashboard</a>
+                        <a href="#" class="block px-3 py-2 text-sm hover:bg-gray-800">Settings</a>
+                        <a href="#" class="block px-3 py-2 text-sm hover:bg-gray-800">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Connection status indicator -->
+        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-neon-blue via-neon-pink to-neon-green" id="connectionIndicator"></div>
+    </header>
+
+    <main class="container mx-auto px-4 py-6 relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Left sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Portfolio Summary with holographic effect -->
+                <div class="bg-black bg-opacity-70 p-4 rounded-lg neon-border-pink holographic">
+                    <div class="relative">
+                        <h2 class="text-xl neon-text-pink font-orbitron mb-4 flex items-center">
+                            <span>PORTFOLIO</span>
+                            <span class="cyber-badge new ml-2">NEW</span>
+                        </h2>
+
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Total Value:</span>
+                                <span class="neon-text-blue font-bold">₡ <span id="portfolio-total">1,245,890</span></span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Day Change:</span>
+                                <span class="text-green-400 font-bold">+₡ <span id="day-change">24,560</span> (<span id="day-change-percent">+2.01%</span>)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400">Buying Power:</span>
+                                <span class="neon-text-blue font-bold">₡ <span id="buying-power">245,890</span></span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6">
+                            <h3 class="text-sm text-gray-400 mb-2">ASSET DISTRIBUTION</h3>
+                            <div class="cyber-progress mb-2">
+                                <div class="cyber-progress-bar" id="asset-progress" style="width: 65%;"></div>
+                            </div>
+                            <div class="flex justify-between text-xs">
+                                <span class="neon-text-pink">Stocks (65%)</span>
+                                <span class="neon-text-blue">Crypto (35%)</span>
+                            </div>
+                        </div>
+
+                        <!-- Mini chart animation -->
+                        <div class="mt-4 h-16 relative">
+                            <canvas id="miniChart" class="w-full h-full"></canvas>
+                            <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-neon-pink via-neon-blue to-neon-green"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions with enhanced buttons -->
+                <div class="bg-black bg-opacity-70 p-4 rounded-lg neon-border-blue">
+                    <h2 class="text-xl neon-text-blue font-orbitron mb-4">QUICK ACTIONS</h2>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <button class="cyber-button bg-neon-pink bg-opacity-20 text-white py-2 px-3 rounded-md neon-border-pink neon-text-pink hover:bg-opacity-30 cyber-tooltip" data-tooltip="Buy Assets">
+                            <i class="fas fa-arrow-up mr-2"></i> Buy
+                        </button>
+                        <button class="cyber-button bg-red-500 bg-opacity-20 text-white py-2 px-3 rounded-md border border-red-500 text-red-400 hover:bg-opacity-30 cyber-tooltip" data-tooltip="Sell Assets">
+                            <i class="fas fa-arrow-down mr-2"></i> Sell
+                        </button>
+                        <button class="cyber-button bg-neon-blue bg-opacity-20 text-white py-2 px-3 rounded-md neon-border-blue neon-text-blue hover:bg-opacity-30 cyber-tooltip" data-tooltip="Trade Pairs">
+                            <i class="fas fa-exchange-alt mr-2"></i> Trade
+                        </button>
+                        <button class="cyber-button bg-purple-500 bg-opacity-20 text-white py-2 px-3 rounded-md border border-purple-500 text-purple-400 hover:bg-opacity-30 cyber-tooltip" data-tooltip="Crypto Markets">
+                            <i class="fas fa-coins mr-2"></i> Crypto
+                        </button>
+                    </div>
+
+                    <!-- Quick transfer form -->
+                    <div class="mt-4">
+                        <h3 class="text-sm neon-text-green mb-2">QUICK TRANSFER</h3>
+                        <div class="flex space-x-2">
+                            <input type="text" class="cyber-input flex-1 text-sm py-1 px-2 rounded" placeholder="Amount ₡">
+                            <button class="cyber-button bg-neon-green bg-opacity-20 text-neon-green text-sm py-1 px-3 rounded border border-neon-green cyber-tooltip" data-tooltip="Transfer Funds">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- News Feed with carousel -->
+                <div class="bg-black bg-opacity-70 p-4 rounded-lg neon-border-pink">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl neon-text-pink font-orbitron">CYBER NEWS</h2>
+                        <div class="flex items-center">
+                            <span class="text-xs text-gray-400 mr-2">AUTO</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" value="" class="sr-only peer" id="newsAutoScroll" checked>
+                                <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-neon-pink"></div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="cyber-carousel" id="newsCarousel">
+                        <div class="cyber-carousel-slide active">
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">10:45 AM</p>
+                                <p class="text-sm neon-text-blue">Arasaka Corp announces breakthrough in neural interface tech</p>
+                            </div>
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">09:30 AM</p>
+                                <p class="text-sm neon-text-blue">Militech wins major defense contract</p>
+                            </div>
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">08:15 AM</p>
+                                <p class="text-sm neon-text-blue">NetWatch reports surge in rogue AIs</p>
+                            </div>
+                        </div>
+
+                        <div class="cyber-carousel-slide">
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">07:00 AM</p>
+                                <p class="text-sm neon-text-blue">Night City stock exchange hits record high</p>
+                            </div>
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">06:30 AM</p>
+                                <p class="text-sm neon-text-blue">New cyberware regulations announced</p>
+                            </div>
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">05:45 AM</p>
+                                <p class="text-sm neon-text-blue">Crypto market volatility expected</p>
+                            </div>
+                        </div>
+
+                        <div class="cyber-carousel-slide">
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">04:30 AM</p>
+                                <p class="text-sm neon-text-blue">Biotechnica patents new synthetic food</p>
+                            </div>
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">03:15 AM</p>
+                                <p class="text-sm neon-text-blue">Trauma Team IPO oversubscribed</p>
+                            </div>
+                            <div class="border-b border-gray-800 pb-3">
+                                <p class="text-xs text-gray-400">02:00 AM</p>
+                                <p class="text-sm neon-text-blue">Zetatech unveils new cyberdeck</p>
+                            </div>
+                        </div>
+
+                        <div class="cyber-carousel-nav">
+                            <div class="cyber-carousel-dot active" data-slide="0"></div>
+                            <div class="cyber-carousel-dot" data-slide="1"></div>
+                            <div class="cyber-carousel-dot" data-slide="2"></div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-center">
+                        <button id="refreshNews" class="text-xs text-gray-400 hover:text-neon-blue">
+                            <i class="fas fa-sync-alt mr-1"></i> Refresh Feed
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Countdown to market close -->
+                <div class="bg-black bg-opacity-70 p-4 rounded-lg neon-border-blue text-center">
+                    <h3 class="text-sm text-gray-400 mb-1">MARKET CLOSES IN</h3>
+                    <div class="cyber-countdown flex justify-center items-center">
+                        <span id="countdown-hours">05</span>
+                        <span class="cyber-countdown separator">:</span>
+                        <span id="countdown-minutes">43</span>
+                        <span class="cyber-countdown separator">:</span>
+                        <span id="countdown-seconds">22</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="lg:col-span-3 space-y-6">
+                <!-- Market Overview with tabs -->
+                <div class="bg-black bg-opacity-70 p-4 rounded-lg neon-border-blue">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl neon-text-blue font-orbitron">MARKET OVERVIEW</h2>
+                        <div class="cyber-tabs">
+                            <div class="cyber-tab active" data-tab="stocks">STOCKS</div>
+                            <div class="cyber-tab" data-tab="crypto">CRYPTO</div>
+                            <div class="cyber-tab" data-tab="futures">FUTURES</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6" id="market-metrics">
+                        <div class="bg-gray-900 bg-opacity-50 p-3 rounded-lg border border-gray-800 hover:border-neon-blue transition">
+                            <p class="text-xs text-gray-400">NIGHT CITY INDEX</p>
+                            <p class="text-xl neon-text-blue font-orbitron">4,328.76</p>
+                            <p class="text-sm text-green-400">+42.18 (0.98%)</p>
+                        </div>
+                        <div class="bg-gray-900 bg-opacity-50 p-3 rounded-lg border border-gray-800 hover:border-neon-pink transition">
+                            <p class="text-xs text-gray-400">TECH SECTOR</p>
+                            <p class="text-xl neon-text-pink font-orbitron">1,845.32</p>
+                            <p class="text-sm text-green-400">+28.45 (1.56%)</p>
+                        </div>
+                        <div class="bg-gray-900 bg-opacity-50 p-3 rounded-lg border border-gray-800 hover:border-neon-blue transition">
+                            <p class="text-xs text-gray-400">BTC/USD</p>
+                            <p class="text-xl neon-text-blue font-orbitron">₡ 42,876</p>
+                            <p class="text-sm text-red-400">-123.45 (-0.29%)</p>
+                        </div>
+                        <div class="bg-gray-900 bg-opacity-50 p-3 rounded-lg border border-gray-800 hover:border-neon-green transition">
+                            <p class="text-xs text-gray-400">VOLATILITY</p>
+                            <p class="text-xl neon-text-green font-orbitron">HIGH</p>
+                            <p class="text-sm text-gray-400">VIX: 28.4</p>
+                        </div>
+                    </div>
+
+                    <!-- Main Chart -->
+                    <div class="h-96 bg-black bg-opacity-50 rounded-lg p-4 border border-gray-800 relative">
+                        <canvas id="mainChart"></canvas>
+                        <div class="absolute top-4 left-4 text-xs">
+                            <span class="font-bold text-lg neon-text-blue">ARASAKA (ASK)</span>
+                            <span class="text-gray-400 ml-2">Night City Stock Exchange</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Watchlist -->
+                <div class="bg-black bg-opacity-70 p-4 rounded-lg neon-border-pink">
+                    <h2 class="text-xl neon-text-pink font-orbitron mb-4">WATCHLIST</h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-gray-800 text-xs text-gray-400">
+                                    <th class="py-2 px-3">SYMBOL</th>
+                                    <th class="py-2 px-3">LAST PRICE</th>
+                                    <th class="py-2 px-3">CHANGE</th>
+                                    <th class="py-2 px-3">% CHANGE</th>
+                                    <th class="py-2 px-3">VOLUME</th>
+                                    <th class="py-2 px-3 text-right">ACTIONS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="watchlist-body">
+                                <!-- Dynamic rows will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <input type="text" id="addToWatchlistInput" class="cyber-input text-sm py-1 px-2 rounded-l" placeholder="Add Symbol...">
+                        <button id="addToWatchlistBtn" class="cyber-button bg-neon-pink bg-opacity-20 text-neon-pink text-sm py-1 px-3 rounded-r border border-neon-pink">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals and Notifications -->
+    <div id="trade-modal" class="cyber-modal">
+        <div class="cyber-modal-content">
+            <span class="cyber-close" id="close-trade-modal">&times;</span>
+            <h2 class="text-2xl neon-text-blue font-orbitron mb-4">TRADE TERMINAL</h2>
+            <!-- Trade form content -->
+        </div>
+    </div>
+
+    <div id="notification" class="cyber-notification">
+        <p class="neon-text-pink">Trade Executed</p>
+        <p class="text-sm text-gray-300">Bought 100 shares of ARASAKA (ASK)</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
     <script src="script.js"></script>
 </body>
 </html>

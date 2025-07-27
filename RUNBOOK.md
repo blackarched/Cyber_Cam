@@ -1,39 +1,53 @@
-# NEXUS Grid Runbook
+# Nexus Security Grid - Runbook
 
-## Common Failures & Troubleshooting
+This runbook provides troubleshooting tips for common issues that may arise when running the Nexus Security Grid.
 
-### Problem: Server fails to start with SSL error
-- **Symptom:** Log shows "Error: ENOENT: no such file or directory, open './certs/key.pem'".
-- **Cause:** SSL certificates are missing.
-- **Solution:** Run `npm run generate:certs` from the project root.
+## 1. Common Issues
 
-### Problem: API returns 503 Service Unavailable on /health
-- **Symptom:** Docker container for `nexus-server` is restarting. `docker logs nexus-server` shows DB connection errors.
-- **Cause:** The database container (`nexus-db`) is not healthy or accessible.
-- **Solution:**
-  1. Check database logs: `docker logs nexus-db`.
-  2. Ensure `.env` variables for the database are correct.
-  3. Restart the stack: `docker-compose down && docker-compose up -d`.
+### 1.1. Application Fails to Start
 
-### Problem: Motion detection is not working
-- **Symptom:** No motion events are being received by the frontend.
-- **Cause:** The `nexus-motion-detector` container is not running or is unable to connect to the video stream.
-- **Solution:**
-  1. Check the logs of the `nexus-motion-detector` container: `docker logs nexus-motion-detector`.
-  2. Ensure that the RTSP stream URL is correct and accessible from the container.
-  3. Check the Redis connection.
+If the application fails to start, check the following:
 
-### Problem: Recording is not working
-- **Symptom:** No recordings are being saved to the filesystem.
-- **Cause:** The `nexus-server` container is unable to connect to the video stream or does not have permission to write to the recordings directory.
-- **Solution:**
-  1. Check the logs of the `nexus-server` container: `docker logs nexus-server`.
-  2. Ensure that the RTSP stream URL is correct and accessible from the container.
-  3. Check the permissions of the recordings directory.
+- **Environment Variables**: Ensure that all the required environment variables are set in the `.env` file.
+- **Database Connection**: Ensure that the database is running and that the connection details in the `.env` file are correct.
+- **Redis Connection**: Ensure that Redis is running and that the connection details in the `.env` file are correct.
+- **Vault Connection**: Ensure that Vault is running and that the connection details in the `.env` file are correct.
+- **Docker**: Ensure that Docker and Docker Compose are installed and running.
 
-### Problem: Frontend is not loading correctly
-- **Symptom:** The frontend is not loading correctly in the browser.
-- **Cause:** The `nexus-proxy` container is not running or is not configured correctly.
-- **Solution:**
-  1. Check the logs of the `nexus-proxy` container: `docker logs nexus-proxy`.
-  2. Ensure that the `nginx.conf` file is correct and that the SSL certificates are in the correct location.
+### 1.2. 502 Bad Gateway Error
+
+If you encounter a 502 Bad Gateway error, it is likely that the backend server is not running. Check the logs for the `nexus-security-grid` container to see if there are any errors.
+
+```
+docker-compose logs -f nexus-security-grid
+```
+
+### 1.3. WebSocket Connection Fails
+
+If the WebSocket connection fails, check the following:
+
+- **Nginx Configuration**: Ensure that the Nginx configuration is correct and that it is configured to proxy WebSocket connections.
+- **CORS**: Ensure that the `FRONTEND_ORIGIN` environment variable is set to the correct value.
+
+### 1.4. Motion Detection Not Working
+
+If motion detection is not working, check the following:
+
+- **Redis**: Ensure that Redis is running and that the motion detection microservice is able to connect to it.
+- **Motion Detection Microservice**: Check the logs for the `motion-detection` container to see if there are any errors.
+
+```
+docker-compose logs -f motion-detection
+```
+
+## 2. Log Files
+
+The application logs are stored in the `logs` directory. The following log files are created:
+
+- `nexus-%DATE%.log`: The main application log file.
+- `exceptions.log`: A log file for uncaught exceptions.
+- `rejections.log`: A log file for unhandled promise rejections.
+
+## 3. Contact
+
+If you are still unable to resolve the issue, please contact the development team for assistance.
