@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS SECURITY GRID</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+        
+        :root {
+            --primary-cyan: #00ffff;
+            --secondary-magenta: #ff00ff;
+            --accent-green: #39ff14;
+            --danger-red: #ff073a;
+            --warning-orange: #ff8c00;
+            --dark-bg: #000000;
+            --panel-bg: rgba(0, 0, 0, 0.95);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            background: var(--dark-bg);
+            color: var(--primary-cyan);
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1920px; margin: 0 auto; padding: 20px; }
+        .header { text-align: center; margin-bottom: 40px; padding: 30px 0; }
+        .title {
+            font-family: 'Orbitron', monospace;
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 900;
+            background: linear-gradient(45deg, var(--primary-cyan), var(--secondary-magenta), var(--accent-green), var(--primary-cyan));
+            background-size: 400% 400%;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .subtitle {
+            color: var(--secondary-magenta);
+            font-size: clamp(1rem, 3vw, 1.6rem);
+            font-weight: 600;
+        }
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px; margin: 40px 0; padding: 25px;
+            border-radius: 15px;
+        }
+        .status-item { text-align: center; padding: 15px; border-radius: 10px; }
+        .status-label { display: block; font-size: 0.9rem; margin-bottom: 8px; }
+        .status-value { font-size: 1.8rem; font-weight: 700; color: var(--accent-green); font-family: 'Orbitron', monospace; }
+        .status-critical { color: var(--danger-red) !important; }
+        .main-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        .panel { background: var(--panel-bg); border-radius: 20px; padding: 25px; }
+        .panel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; }
+        .panel-title { font-family: 'Orbitron', monospace; font-size: 1.6rem; font-weight: 700; }
+        .camera-grid { grid-column: 1; grid-row: 1 / 3; }
+        .cameras-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .camera-feed { position: relative; aspect-ratio: 16/9; cursor: pointer; }
+        .camera-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; }
+        .camera-name { font-weight: 700; font-size: 1.1rem; }
+        .camera-details { font-size: 0.9rem; }
+        .controls-panel { grid-column: 2; grid-row: 1; }
+        .control-button { width: 100%; padding: 18px; margin-bottom: 15px; font-size: 1.1rem; font-weight: 700; cursor: pointer; }
+        .danger-button { border-color: var(--danger-red); color: var(--danger-red); }
+        .activity-panel { grid-column: 1 / 3; }
+        .activity-log { max-height: 250px; overflow-y: auto; font-family: 'Share Tech Mono', monospace; }
+        .activity-item { display: flex; align-items: center; padding: 12px 0; }
+        .activity-time { font-size: 0.9rem; min-width: 100px; }
+        .activity-message { margin-left: 20px; }
+        .activity-alert { color: var(--danger-red) !important; }
+        .activity-warning { color: var(--warning-orange) !important; }
+    </style>
+</head>
+<body>
+    <div class="container" id="dashboardContainer">
+        <header class="header">
+            <h1 class="title">NEXUS SECURITY GRID</h1>
+            <p class="subtitle">⚡ ADVANCED SURVEILLANCE MATRIX ⚡</p>
+        </header>
+        <div class="status-bar">
+            <div class="status-item"><span class="status-label">⚡ SYSTEM STATUS</span><span class="status-value" id="systemStatus">ONLINE</span></div>
+            <div class="status-item"><span class="status-label">📹 ACTIVE FEEDS</span><span class="status-value" id="activeCameras">0/0</span></div>
+            <div class="status-item"><span class="status-label">🚨 CRITICAL ALERTS</span><span class="status-value" id="alertCount">0</span></div>
+            <div class="status-item"><span class="status-label">⏱️ UPTIME</span><span class="status-value" id="uptime">00:00:00</span></div>
+            <div class="status-item"><span class="status-label">🛡️ USER</span><span class="status-value" id="currentUser">GRID_OPERATOR</span></div>
+        </div>
+        <div class="main-grid">
+            <div class="camera-grid">
+                <div class="panel">
+                    <div class="panel-header"><h2 class="panel-title">🎯 SURVEILLANCE MATRIX</h2></div>
+                    <div class="cameras-container" id="cameras-container"></div>
+                </div>
+            </div>
+            <div class="controls-panel">
+                <div class="panel">
+                    <div class="panel-header"><h2 class="panel-title">⚡ COMMAND CENTER</h2></div>
+                    <button class="control-button" onclick="nexusController.armSystem()">🛡️ ARM SYSTEM</button>
+                    <button class="control-button" onclick="nexusController.disarmSystem()">🔓 DISARM GRID</button>
+                    <button class="control-button" onclick="nexusController.recordAll()">🎬 RECORD ALL</button>
+                    <button class="control-button" onclick="nexusController.nightVision()">🌙 NIGHT VISION</button>
+                    <button class="control-button danger-button" onclick="nexusController.emergencyMode()">🚨 LOCKDOWN</button>
+                </div>
+            </div>
+            <div class="activity-panel">
+                <div class="panel">
+                    <div class="panel-header"><h2 class="panel-title">📡 NEURAL ACTIVITY LOG</h2></div>
+                    <div class="activity-log" id="activityLog"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        class NEXUSCyberpunkController {
+            constructor() {
+                this.baseUrl = 'https://localhost';
+                this.wsConnection = null;
+                this.cameras = new Map();
+                this.startTime = Date.now();
+            }
+
+            init() {
+                this.addActivityLog('NEXUS Grid direct initialization sequence started.', 'info');
+                this.startRealTimeUpdates();
+                this.loadInitialData();
+                this.startSystemClocks();
+            }
+
+            async apiCall(endpoint, method = 'GET', body = null) {
+                try {
+                    const options = { method, headers: { 'Content-Type': 'application/json' } };
+                    if (body) options.body = JSON.stringify(body);
+                    const response = await fetch(`${this.baseUrl}/api${endpoint}`, options);
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.error || `HTTP Error ${response.status}`);
+                    }
+                    return response.status === 204 ? null : await response.json();
+                } catch (error) {
+                    this.addActivityLog(`API CALL FAILED [${endpoint}]: ${error.message}`, 'error');
+                    return null;
+                }
+            }
+
+            startRealTimeUpdates() {
+                this.wsConnection = new WebSocket(`wss://localhost/api/ws`);
+                this.wsConnection.onopen = () => this.addActivityLog('WebSocket neural network online.', 'success');
+                this.wsConnection.onmessage = (event) => {
+                    if (typeof event.data === 'string') {
+                        const data = JSON.parse(event.data);
+                        // Future logic to handle status updates
+                    }
+                };
+                this.wsConnection.onerror = () => this.addActivityLog('WebSocket link disruption.', 'error');
+                this.wsConnection.onclose = () => {
+                    this.addActivityLog('Neural link severed. Reconnecting...', 'warning');
+                    setTimeout(() => this.startRealTimeUpdates(), 5000);
+                };
+            }
+
+            async loadInitialData() {
+                const cameraData = await this.apiCall('/cameras');
+                if (cameraData) {
+                    this.cameras.clear();
+                    cameraData.forEach(cam => this.cameras.set(cam.node_id, cam));
+                    this.renderCameraGrid();
+                }
+            }
+
+            renderCameraGrid() {
+                const container = document.getElementById('cameras-container');
+                container.innerHTML = '';
+                for (const [nodeId, camera] of this.cameras.entries()) {
+                    const feedEl = document.createElement('div');
+                    feedEl.className = 'camera-feed';
+                    feedEl.dataset.nodeId = nodeId;
+                    feedEl.innerHTML = `
+                        <div class="camera-info">
+                            <div class="camera-name">${camera.designation}</div>
+                            <div class="camera-details">${camera.status.toUpperCase()} | ${camera.ip_address}</div>
+                        </div>`;
+                    container.appendChild(feedEl);
+                }
+                const online = Array.from(this.cameras.values()).filter(c => c.status === 'online').length;
+                document.getElementById('activeCameras').textContent = `${online}/${this.cameras.size}`;
+            }
+
+            async armSystem() { await this.apiCall('/system/arm', 'POST'); this.addActivityLog('ARM SYSTEM command sent.', 'warning'); }
+            async disarmSystem() { await this.apiCall('/system/disarm', 'POST'); this.addActivityLog('DISARM GRID command sent.', 'info'); }
+            async recordAll() { await this.apiCall('/system/record/all', 'POST'); this.addActivityLog('RECORD ALL command sent.', 'info'); }
+            async nightVision() { await this.apiCall('/system/night-vision/toggle', 'POST'); this.addActivityLog('NIGHT VISION TOGGLE command sent.', 'info'); }
+            async emergencyMode() { await this.apiCall('/system/emergency/lockdown', 'POST'); this.addActivityLog('EMERGENCY LOCKDOWN command sent.', 'alert'); }
+
+            addActivityLog(message, type = 'info') {
+                const logContainer = document.getElementById('activityLog');
+                const timeString = new Date().toLocaleTimeString('en-US', { hour12: false });
+                const typeClass = type === 'alert' ? 'activity-alert' : type === 'warning' ? 'activity-warning' : '';
+                const logItem = document.createElement('div');
+                logItem.className = 'activity-item';
+                logItem.innerHTML = `<span class="activity-time">${timeString}</span><span class="activity-message ${typeClass}">${message}</span>`;
+                logContainer.insertBefore(logItem, logContainer.firstChild);
+                if (logContainer.children.length > 50) logContainer.removeChild(logContainer.lastChild);
+            }
+
+            startSystemClocks() {
+                setInterval(() => {
+                    const uptime = Date.now() - this.startTime;
+                    const h = String(Math.floor(uptime / 3600000)).padStart(2, '0');
+                    const m = String(Math.floor((uptime % 3600000) / 60000)).padStart(2, '0');
+                    const s = String(Math.floor((uptime % 60000) / 1000)).padStart(2, '0');
+                    document.getElementById('uptime').textContent = `${h}:${m}:${s}`;
+                }, 1000);
+            }
+        }
+
+        let nexusController;
+        document.addEventListener('DOMContentLoaded', () => {
+            nexusController = new NEXUSCyberpunkController();
+            nexusController.init();
+        });
+    </script>
+</body>
+</html>

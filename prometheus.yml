@@ -1,0 +1,16 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'nexus-server'
+    scheme: https
+    static_configs:
+      - targets: ['nexus-server:8443']
+    tls_config:
+      # This is the critical security change. Instead of skipping verification,
+      # we provide the Certificate Authority file to validate the server's certificate.
+      # For local development with self-signed certs, the server's public cert acts as its own CA.
+      # In production, this should point to the CA bundle that signed your official certificate.
+      ca_file: /etc/prometheus/certs/cert.pem
+      # The server_name must match the Common Name (CN) in the certificate.
+      server_name: localhost

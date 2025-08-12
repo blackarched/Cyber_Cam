@@ -1,0 +1,40 @@
+// This test requires the server to be running.
+// It's designed to be run against a live development server or as part of an integration test suite.
+
+const supertest = require('supertest');
+
+// The base URL of the API. For local Docker setup, this will be the NGINX proxy.
+// Ensure you are running `docker-compose up` before executing this test.
+const request = supertest('https://localhost');
+
+describe('API Health Checks', () => {
+
+    it('GET /health should respond with a 200 OK status and operational message', async () => {
+        const response = await request
+            .get('/health')
+            // We use .trustLocalHost() for self-signed certificates in a local test environment
+            .trustLocalHost();
+
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('status', 'operational');
+        expect(response.body).toHaveProperty('timestamp');
+    });
+
+    it('GET /api should respond with a 200 OK status and a welcome message', async () => {
+        const response = await request
+            .get('/api')
+            .trustLocalHost();
+            
+        expect(response.status).toBe(200);
+        expect(response.body).toHaveProperty('message', 'NEXUS API Matrix is online and fully operational.');
+    });
+
+    it('GET /non-existent-route should respond with a 404 Not Found error', async () => {
+        const response = await request
+            .get('/api/invalid-endpoint-that-does-not-exist')
+            .trustLocalHost();
+            
+        expect(response.status).toBe(404);
+        expect(response.body).toHaveProperty('error');
+    });
+});

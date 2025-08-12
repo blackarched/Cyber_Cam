@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Environment Variables
+.env
+
+# Logs
+logs/
+*.log
+
+# Test & Build Artifacts
+coverage/
+dist/
+build/
+
+# IDE & OS specific
+.DS_Store
+.vscode/
